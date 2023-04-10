@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="10">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:background="#5E5E5E"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:id="@+id/solution_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center|end"
+                android:padding="6dp"
+                android:textAlignment="textEnd"
+                android:textColor="@color/white"
+                android:textSize="32sp" />
+
+            <TextView
+                android:id="@+id/equation_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center|end"
+                android:padding="6dp"
+                android:textAlignment="textEnd"
+                android:textColor="@color/white"
+                android:textSize="25sp"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/buttons_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="7"
+            android:background="#323232"
+            android:orientation="vertical"
+            android:weightSum="5">
+
+            <LinearLayout
+                style="@style/calcRow">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_ac"
+                    style="@style/calcButton"
+                    android:text="@string/ac"
+                    app:backgroundTint="@color/purple_200">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_c"
+                    android:text="@string/c"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_200">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:text="@string/change_sign"
+                    android:id="@+id/change_sign"
+                    app:backgroundTint="@color/purple_200"
+                    style="@style/calcButton">
+
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:text="@string/divide"
+                    android:id="@+id/button_divide"
+                    android:backgroundTint="@color/purple_200"
+                    style="@style/calcButton">
+
+                </com.google.android.material.button.MaterialButton>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/calcRow">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_7"
+                    android:text="@string/seven"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_8"
+                    android:text="@string/eight"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_9"
+                    android:text="@string/nine"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_multiply"
+                    android:text="@string/multiply"
+                    style="@style/calcButton"
+                    android:backgroundTint="@color/purple_200">
+
+                </com.google.android.material.button.MaterialButton>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/calcRow">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_4"
+                    android:text="@string/four"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_5"
+                    android:text="@string/five"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_6"
+                    android:text="@string/six"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_subtract"
+                    android:text="@string/subtract"
+                    style="@style/calcButton"
+                    android:backgroundTint="@color/purple_200">
+
+                </com.google.android.material.button.MaterialButton>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/calcRow">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_1"
+                    android:text="@string/one"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_2"
+                    android:text="@string/two"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_3"
+                    android:text="@string/three"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_add"
+                    android:text="@string/add"
+                    style="@style/calcButton"
+                    android:backgroundTint="@color/purple_200">
+
+                </com.google.android.material.button.MaterialButton>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/calcRow">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_0"
+                    android:text="@string/zero"
+                    style="@style/calcButton"
+                    android:layout_weight="2"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_dot"
+                    android:text="@string/dot"
+                    style="@style/calcButton"
+                    app:backgroundTint="@color/purple_500">
+
+                </com.google.android.material.button.MaterialButton>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_equals"
+                    android:text="@string/equals"
+                    style="@style/calcButton"
+                    android:backgroundTint="@color/purple_200">
+
+                </com.google.android.material.button.MaterialButton>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
