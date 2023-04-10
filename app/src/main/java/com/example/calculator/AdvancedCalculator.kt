@@ -1,18 +1,18 @@
 package com.example.calculator
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import kotlin.math.sin
 
 class AdvancedCalculator : AppCompatActivity() {
 
     private lateinit var equationView: TextView
     private lateinit var solutionView: TextView
-    private val numbers: MutableList<String> = arrayListOf()
-    private val operations: MutableList<String> = arrayListOf()
-    private val specialOperations: MutableList<String> = arrayListOf()
+    private val eq_queue: MutableList<String> = arrayListOf()
     private var onClick: Int = 0
 
 
@@ -138,45 +138,45 @@ class AdvancedCalculator : AppCompatActivity() {
         }
 
         buttonPercentage.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
         buttonSqrt.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
         buttonXPow.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
         buttonXPowY.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
         buttonSin.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
         buttonCos.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
         buttonTan.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
         buttonLog.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
         buttonLn.setOnClickListener {
-            onSpecialOperationClick(it)
+            onOperationClick(it)
         }
 
     }
 
     private fun onEqualsClick() {
-
+        Log.d("Sin: ", sin((-90).toDouble()).toString())
     }
 
     private fun onChangeSign() {
@@ -191,25 +191,11 @@ class AdvancedCalculator : AppCompatActivity() {
 
     }
 
-    private fun onSpecialOperationClick(it: View) {
-        val btn = it as Button
-        val btnText = btn.text.toString()
-        equationView.text = getString(
-            R.string.equation_view,
-            equationView.text.toString() + btnText
-        )
-    }
-
     private fun onDigitClick(it: View) {
         val btn = it as Button
         val btnText = btn.text.toString()
 
-        if (onClick > 0) {
-            numbers[numbers.lastIndex] = numbers.last() + btnText
-        } else {
-            numbers.add(btnText)
-            onClick++
-        }
+//        TODO("add number to whole equation queue")
 
         updateEquationView()
     }
@@ -219,31 +205,13 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun extractEquation(): String {
-        var res = ""
-        val max =
-            if (numbers.size > operations.size) numbers.size - 1
-            else operations.size - 1
-
-        for (i in 0..max) {
-            try {
-                res += numbers[i]
-            }
-            catch (_: java.lang.IndexOutOfBoundsException) {  }
-
-            try {
-                res += operations[i]
-            }
-            catch (_: java.lang.IndexOutOfBoundsException) { }
-        }
-
-        return res
+        return eq_queue.joinToString(" ")
     }
 
     private fun clearEquationView() {
-        numbers.clear()
-        operations.clear()
+        eq_queue.clear()
         equationView.text = ""
-        onClick = 0
+//        onClick = 0
     }
 
     private fun clearAllViews() {
