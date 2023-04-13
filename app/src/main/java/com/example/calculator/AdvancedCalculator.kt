@@ -7,14 +7,12 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.isDigitsOnly
-import kotlin.math.PI
-import kotlin.math.sin
 
 class AdvancedCalculator : AppCompatActivity() {
 
     private lateinit var equationView: TextView
     private lateinit var solutionView: TextView
-    private val eqQueue: MutableList<String> = arrayListOf()
+    private val equationQueue: MutableList<String> = arrayListOf()
     private val specialOp: MutableList<String> = arrayListOf()
     private var isSpecialTyping: Boolean = false
     private var digitClicks: Int = 0
@@ -135,7 +133,7 @@ class AdvancedCalculator : AppCompatActivity() {
         }
 
         buttonDot.setOnClickListener {
-            onDotClick(it)
+            onDotClick()
         }
 
         buttonChangeSign.setOnClickListener {
@@ -143,21 +141,46 @@ class AdvancedCalculator : AppCompatActivity() {
         }
 
         buttonPercentage.setOnClickListener {
-//            onSpecialOpClick(it)
-            // TODO write percentage's own logic
+            if (equationQueue.isEmpty())
+                return@setOnClickListener
+
+            if (!equationQueue[equationQueue.lastIndex].endsWith('%'))
+                equationQueue[equationQueue.lastIndex] =
+                    "${equationQueue[equationQueue.lastIndex]}%"
+
+            updateEquationView()
         }
 
         buttonSqrt.setOnClickListener {
-//            onSpecialOpClick(it)
-            onDigitClick(it)
+            if (equationQueue.isEmpty()) {
+                equationQueue.add((it as Button).text.toString())
+                return@setOnClickListener
+            }
+
+            val operations = arrayListOf("+", "-", "*", "/")
+
+            if (equationQueue[equationQueue.lastIndex] in operations)
+                equationQueue.add((it as Button).text.toString())
+
+            updateEquationView()
         }
 
         buttonXPow.setOnClickListener {
-            onSpecialOpClick(it)
+            if (equationQueue.isEmpty() || equationQueue[equationQueue.lastIndex].contains("^"))
+                return@setOnClickListener
+
+            val li = equationQueue.lastIndex
+            if (!isSpecialTyping && !equationQueue.last().contains("^2") &&
+                (equationQueue[li].last().isDigit() || equationQueue[li].endsWith(")"))
+            ) {
+                equationQueue[li] = "${equationQueue[li]}^2"
+            }
+
+            updateEquationView()
         }
 
         buttonXPowY.setOnClickListener {
-            onSpecialOpClick(it)
+            // TODO implement own listener
         }
 
         buttonSin.setOnClickListener {
@@ -183,43 +206,87 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onEqualsClick() {
-        Log.d("Test: ", "314".isDigitsOnly().toString())
+        Log.d("equationQueue: ", equationQueue.toString())
+        Log.d("specialOp: ", specialOp.toString())
     }
 
     private fun onChangeSign() {
-        if (eqQueue.isEmpty())
+        if (equationQueue.isEmpty() && specialOp.isEmpty())
             return
 
-        eqQueue[eqQueue.lastIndex] = eqQueue[eqQueue.lastIndex]
-            .replace("(", "")
-            .replace(")", "")
+        // Changing sign of a number
+        if (!isSpecialTyping && equationQueue.isNotEmpty()) {
+            val li = equationQueue.lastIndex
+            var isPow = false
 
-        if (eqQueue[eqQueue.lastIndex].toInt() > 0)
-            eqQueue[eqQueue.lastIndex] = "(${(eqQueue.last().toInt() * -1)})"
-        else
-            eqQueue[eqQueue.lastIndex] = "${(eqQueue.last().toInt() * -1)}"
+            if (equationQueue.last().contains("^2"))
+                isPow = true
+
+            val prefix = equationQueue.last().substringBefore("^").replace("(", "").replace(")", "")
+            val postfix = equationQueue.last().substringAfter("^")
+//            equationQueue[li].replace("^${postfix}", "")
+
+            Log.d("Prefix", prefix)
+            Log.d("Postfix", postfix)
+            Log.d("equationQeueu", equationQueue.toString())
+
+            equationQueue[li] = equationQueue[li]
+                .replace("(", "")
+                .replace(")", "")
+
+            if (prefix.toInt() > 0)
+                equationQueue[li] = "(${prefix.toInt() * -1})"
+            else
+                equationQueue[li] = "${prefix.toInt() * -1}"
+
+            if (isPow)
+                equationQueue[li] = "${equationQueue[li]}^${postfix}"
+        }
+        // Changing sign of a number in trigonometric expression
+        else if (isSpecialTyping && specialOp.isNotEmpty()) {
+            val lastSpecialOp = specialOp[specialOp.lastIndex]
+            val trigs = arrayListOf("cos(", "sin(", "tan(", "log(")
+
+            if (lastSpecialOp.startsWith("ln") && lastSpecialOp.length == 3)
+                return
+            else if (lastSpecialOp in trigs && lastSpecialOp.length == 4)
+                return
+
+            if (lastSpecialOp.startsWith("ln")) {
+                if (lastSpecialOp.length > 3 && lastSpecialOp[3] == '-')
+                    specialOp[specialOp.lastIndex] = lastSpecialOp.replace("-", "")
+                else
+                    specialOp[specialOp.lastIndex] = lastSpecialOp.replaceRange(3, 3, "-")
+            } else {
+                if (lastSpecialOp.length > 4 && lastSpecialOp[4] == '-')
+                    specialOp[specialOp.lastIndex] = lastSpecialOp.replace("-", "")
+                else
+                    specialOp[specialOp.lastIndex] = lastSpecialOp.replaceRange(4, 4, "-")
+            }
+        }
+
         updateEquationView()
     }
 
-    private fun onDotClick(it: View) {
-        if (eqQueue.isEmpty() && specialOp.isEmpty())
+    private fun onDotClick() {
+        if (equationQueue.isEmpty() && specialOp.isEmpty())
             return
 
         val lastSpecialOp = if (specialOp.isNotEmpty()) specialOp[specialOp.lastIndex] else ""
-        val lastDigit = if (eqQueue.isNotEmpty()) eqQueue[eqQueue.lastIndex] else ""
+        val lastDigit =
+            if (equationQueue.isNotEmpty()) equationQueue[equationQueue.lastIndex] else ""
 
         if (isSpecialTyping && validSpecialOpDot(lastSpecialOp))
-            specialOp[specialOp.lastIndex] =
-                lastSpecialOp + (it as Button).text.toString()
+            specialOp[specialOp.lastIndex] = "$lastSpecialOp."
         else if (!isSpecialTyping && lastDigit.isDigitsOnly())
-            eqQueue[eqQueue.lastIndex] = lastDigit + (it as Button).text.toString()
+            equationQueue[equationQueue.lastIndex] = "$lastDigit."
 
         updateEquationView()
     }
 
     private fun validSpecialOpDot(lastSpecialOp: String): Boolean {
         if (lastSpecialOp.startsWith("ln") && lastSpecialOp.length > 3)
-                return true
+            return true
         else
             if (lastSpecialOp.length > 4)
                 return true
@@ -229,11 +296,11 @@ class AdvancedCalculator : AppCompatActivity() {
 
     private fun onOperationClick(it: View) {
         if (digitClicks > 0) {
-            if (isSpecialTyping)
-                specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + ")"
+//            if (isSpecialTyping)
+//                specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + ")"
 
             isSpecialTyping = false
-            eqQueue.add((it as Button).text.toString())
+            equationQueue.add((it as Button).text.toString())
             digitClicks = 0
             updateEquationView()
         }
@@ -246,21 +313,24 @@ class AdvancedCalculator : AppCompatActivity() {
 
             val btn = (it as Button).text.toString()
             specialOp.add("$btn(")
-            eqQueue.add("s${s++}")
+            equationQueue.add("s${s++}")
 
             updateEquationView()
         }
     }
 
     private fun onDigitClick(it: View) {
+        if (equationQueue.isNotEmpty() && equationQueue.last().contains("^2"))
+            return
+
         val btn = it as Button
         val btnText = btn.text.toString()
 
         if (!isSpecialTyping) {
             if (digitClicks > 0)
-                eqQueue[eqQueue.lastIndex] = eqQueue.last() + btnText
+                equationQueue[equationQueue.lastIndex] = equationQueue.last() + btnText
             else
-                eqQueue.add(btnText)
+                equationQueue.add(btnText)
         } else
             specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + btnText
 
@@ -275,19 +345,19 @@ class AdvancedCalculator : AppCompatActivity() {
     private fun extractEquation(): String {
         var res = ""
 
-        for (i in eqQueue.indices) {
-            res += if (eqQueue[i].startsWith("s")) {
-                val opIndex = eqQueue[i].slice(1 until eqQueue[i].length).toInt()
-                specialOp[opIndex]
+        for (i in equationQueue.indices) {
+            res += if (equationQueue[i].startsWith("s")) {
+                val opIndex = equationQueue[i].slice(1 until equationQueue[i].length).toInt()
+                "${specialOp[opIndex]}) "
             } else
-                eqQueue[i]
+                "${equationQueue[i]} "
         }
 
         return res
     }
 
     private fun clearEquationView() {
-        eqQueue.clear()
+        equationQueue.clear()
         specialOp.clear()
         equationView.text = ""
         digitClicks = 0
