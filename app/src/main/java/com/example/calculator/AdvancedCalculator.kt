@@ -205,14 +205,16 @@ class AdvancedCalculator : AppCompatActivity() {
         if (eqQueue.isEmpty() && specialOp.isEmpty())
             return
 
-        val lastSpecialOp = specialOp[specialOp.lastIndex]
-        val lastDigit = eqQueue[eqQueue.lastIndex]
+        val lastSpecialOp = if (specialOp.isNotEmpty()) specialOp[specialOp.lastIndex] else ""
+        val lastDigit = if (eqQueue.isNotEmpty()) eqQueue[eqQueue.lastIndex] else ""
 
         if (isSpecialTyping && !lastSpecialOp.contains('.'))
             specialOp[specialOp.lastIndex] =
                 lastSpecialOp + (it as Button).text.toString()
         else if (!isSpecialTyping && lastDigit.isDigitsOnly())
             eqQueue[eqQueue.lastIndex] = lastDigit + (it as Button).text.toString()
+
+        updateEquationView()
     }
 
     private fun onOperationClick(it: View) {
