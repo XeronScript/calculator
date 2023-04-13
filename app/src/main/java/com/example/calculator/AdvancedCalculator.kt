@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.text.isDigitsOnly
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -182,7 +183,7 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onEqualsClick() {
-        Log.d("Sin: ", sin(PI).toString())
+        Log.d("Test: ", "314".isDigitsOnly().toString())
     }
 
     private fun onChangeSign() {
@@ -201,7 +202,17 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onDotClick(it: View) {
+        if (eqQueue.isEmpty() && specialOp.isEmpty())
+            return
 
+        val lastSpecialOp = specialOp[specialOp.lastIndex]
+        val lastDigit = eqQueue[eqQueue.lastIndex]
+
+        if (isSpecialTyping && !lastSpecialOp.contains('.'))
+            specialOp[specialOp.lastIndex] =
+                lastSpecialOp + (it as Button).text.toString()
+        else if (!isSpecialTyping && lastDigit.isDigitsOnly())
+            eqQueue[eqQueue.lastIndex] = lastDigit + (it as Button).text.toString()
     }
 
     private fun onOperationClick(it: View) {
@@ -235,14 +246,12 @@ class AdvancedCalculator : AppCompatActivity() {
         val btn = it as Button
         val btnText = btn.text.toString()
 
-        if (!isSpecialTyping)
-        {
+        if (!isSpecialTyping) {
             if (digitClicks > 0)
                 eqQueue[eqQueue.lastIndex] = eqQueue.last() + btnText
             else
                 eqQueue.add(btnText)
-        }
-        else
+        } else
             specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + btnText
 
         digitClicks++
@@ -254,8 +263,17 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun extractEquation(): String {
-        // TODO add special operators form specialOp list
-        return eqQueue.joinToString(" ")
+        var res = ""
+
+        for (i in eqQueue.indices) {
+            res += if (eqQueue[i].startsWith("s")) {
+                val opIndex = eqQueue[i].slice(1 until eqQueue[i].length).toInt()
+                specialOp[opIndex]
+            } else
+                eqQueue[i]
+        }
+
+        return res
     }
 
     private fun clearEquationView() {

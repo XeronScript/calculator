@@ -24,11 +24,11 @@
     <string name="cos">cos</string>
     <string name="tan">tan</string>
     <string name="log">log</string>
+    <string name="ln">ln</string>
     <string name="percent">%</string>
     <string name="sqrt">√</string>
     <string name="xpow">x^2</string>
     <string name="xpowy">x^y</string>
-    <string name="ln">ln</string>
     <string name="equation_view">%1$s</string>
     <string name="simple">Simple</string>
     <string name="advanced">Advanced</string>
