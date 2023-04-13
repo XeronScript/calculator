@@ -208,7 +208,7 @@ class AdvancedCalculator : AppCompatActivity() {
         val lastSpecialOp = if (specialOp.isNotEmpty()) specialOp[specialOp.lastIndex] else ""
         val lastDigit = if (eqQueue.isNotEmpty()) eqQueue[eqQueue.lastIndex] else ""
 
-        if (isSpecialTyping && !lastSpecialOp.contains('.'))
+        if (isSpecialTyping && validSpecialOpDot(lastSpecialOp))
             specialOp[specialOp.lastIndex] =
                 lastSpecialOp + (it as Button).text.toString()
         else if (!isSpecialTyping && lastDigit.isDigitsOnly())
@@ -217,10 +217,18 @@ class AdvancedCalculator : AppCompatActivity() {
         updateEquationView()
     }
 
+    private fun validSpecialOpDot(lastSpecialOp: String): Boolean {
+        if (lastSpecialOp.startsWith("ln") && lastSpecialOp.length > 3)
+                return true
+        else
+            if (lastSpecialOp.length > 4)
+                return true
+
+        return false
+    }
+
     private fun onOperationClick(it: View) {
         if (digitClicks > 0) {
-//            val op = specialOp[specialOp.lastIndex].slice(0..2)
-//            val tryg = arrayListOf("sin", "cos", "tan", "ln")
             if (isSpecialTyping)
                 specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + ")"
 
