@@ -13,8 +13,11 @@ class AdvancedCalculator : AppCompatActivity() {
 
     private lateinit var equationView: TextView
     private lateinit var solutionView: TextView
-    private val eq_queue: MutableList<String> = arrayListOf()
-    private var onClick: Int = 0
+    private val eqQueue: MutableList<String> = arrayListOf()
+    private val specialOp: MutableList<String> = arrayListOf()
+    private var isSpecialTyping: Boolean = false
+    private var digitClicks: Int = 0
+    private var s: Int = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -139,39 +142,41 @@ class AdvancedCalculator : AppCompatActivity() {
         }
 
         buttonPercentage.setOnClickListener {
-            onOperationClick(it)
+//            onSpecialOpClick(it)
+            // TODO write percentage's own logic
         }
 
         buttonSqrt.setOnClickListener {
-            onOperationClick(it)
+//            onSpecialOpClick(it)
+            onDigitClick(it)
         }
 
         buttonXPow.setOnClickListener {
-            onOperationClick(it)
+            onSpecialOpClick(it)
         }
 
         buttonXPowY.setOnClickListener {
-            onOperationClick(it)
+            onSpecialOpClick(it)
         }
 
         buttonSin.setOnClickListener {
-            onOperationClick(it)
+            onSpecialOpClick(it)
         }
 
         buttonCos.setOnClickListener {
-            onOperationClick(it)
+            onSpecialOpClick(it)
         }
 
         buttonTan.setOnClickListener {
-            onOperationClick(it)
+            onSpecialOpClick(it)
         }
 
         buttonLog.setOnClickListener {
-            onOperationClick(it)
+            onSpecialOpClick(it)
         }
 
         buttonLn.setOnClickListener {
-            onOperationClick(it)
+            onSpecialOpClick(it)
         }
 
     }
@@ -181,7 +186,18 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onChangeSign() {
+        if (eqQueue.isEmpty())
+            return
 
+        eqQueue[eqQueue.lastIndex] = eqQueue[eqQueue.lastIndex]
+            .replace("(", "")
+            .replace(")", "")
+
+        if (eqQueue[eqQueue.lastIndex].toInt() > 0)
+            eqQueue[eqQueue.lastIndex] = "(${(eqQueue.last().toInt() * -1)})"
+        else
+            eqQueue[eqQueue.lastIndex] = "${(eqQueue.last().toInt() * -1)}"
+        updateEquationView()
     }
 
     private fun onDotClick(it: View) {
@@ -189,15 +205,47 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onOperationClick(it: View) {
+        if (digitClicks > 0) {
+//            val op = specialOp[specialOp.lastIndex].slice(0..2)
+//            val tryg = arrayListOf("sin", "cos", "tan", "ln")
+            if (isSpecialTyping)
+                specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + ")"
 
+            isSpecialTyping = false
+            eqQueue.add((it as Button).text.toString())
+            digitClicks = 0
+            updateEquationView()
+        }
+    }
+
+    private fun onSpecialOpClick(it: View) {
+        if (digitClicks == 0) {
+            isSpecialTyping = true
+            digitClicks++
+
+            val btn = (it as Button).text.toString()
+            specialOp.add("$btn(")
+            eqQueue.add("s${s++}")
+
+            updateEquationView()
+        }
     }
 
     private fun onDigitClick(it: View) {
         val btn = it as Button
         val btnText = btn.text.toString()
 
-//        TODO("add number to whole equation queue")
+        if (!isSpecialTyping)
+        {
+            if (digitClicks > 0)
+                eqQueue[eqQueue.lastIndex] = eqQueue.last() + btnText
+            else
+                eqQueue.add(btnText)
+        }
+        else
+            specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + btnText
 
+        digitClicks++
         updateEquationView()
     }
 
@@ -206,13 +254,17 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun extractEquation(): String {
-        return eq_queue.joinToString(" ")
+        // TODO add special operators form specialOp list
+        return eqQueue.joinToString(" ")
     }
 
     private fun clearEquationView() {
-        eq_queue.clear()
+        eqQueue.clear()
+        specialOp.clear()
         equationView.text = ""
-//        onClick = 0
+        digitClicks = 0
+        s = 0
+        isSpecialTyping = false
     }
 
     private fun clearAllViews() {
