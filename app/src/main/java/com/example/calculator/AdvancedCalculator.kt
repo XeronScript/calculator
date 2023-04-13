@@ -144,34 +144,41 @@ class AdvancedCalculator : AppCompatActivity() {
             if (equationQueue.isEmpty())
                 return@setOnClickListener
 
-            if (!equationQueue[equationQueue.lastIndex].endsWith('%'))
+            if (!equationQueue.last().endsWith('%') && isFloatOrInt(equationQueue.last()))
                 equationQueue[equationQueue.lastIndex] =
                     "${equationQueue[equationQueue.lastIndex]}%"
 
+            Log.d("equationQueue: ", equationQueue.toString())
+            Log.d("specialOp: ", specialOp.toString())
             updateEquationView()
         }
 
         buttonSqrt.setOnClickListener {
             if (equationQueue.isEmpty()) {
                 equationQueue.add((it as Button).text.toString())
+                digitClicks++
+                updateEquationView()
                 return@setOnClickListener
             }
 
             val operations = arrayListOf("+", "-", "*", "/")
 
-            if (equationQueue[equationQueue.lastIndex] in operations)
+            if (equationQueue.last() in operations) {
                 equationQueue.add((it as Button).text.toString())
+                digitClicks++
+            }
 
             updateEquationView()
         }
 
         buttonXPow.setOnClickListener {
-            if (equationQueue.isEmpty() || equationQueue[equationQueue.lastIndex].contains("^"))
+            if (equationQueue.isEmpty() || equationQueue.last().contains("^"))
                 return@setOnClickListener
 
             val li = equationQueue.lastIndex
             if (!isSpecialTyping && !equationQueue.last().contains("^2") &&
-                (equationQueue[li].last().isDigit() || equationQueue[li].endsWith(")"))
+                (equationQueue[li].last().isDigit() || equationQueue[li].endsWith(")")) &&
+                !equationQueue.last().contains(getString(R.string.sqrt))
             ) {
                 equationQueue[li] = "${equationQueue[li]}^2"
             }
@@ -180,7 +187,7 @@ class AdvancedCalculator : AppCompatActivity() {
         }
 
         buttonXPowY.setOnClickListener {
-            // TODO implement own listener
+
         }
 
         buttonSin.setOnClickListener {
@@ -205,6 +212,23 @@ class AdvancedCalculator : AppCompatActivity() {
 
     }
 
+    private fun isFloatOrInt(last: String): Boolean {
+        var pass: Int = 0
+
+        try {
+            last.toInt()
+            pass++
+        } catch (_: java.lang.NumberFormatException) {}
+
+        try {
+            last.toFloat()
+            pass++
+        } catch (_: java.lang.NumberFormatException) {}
+
+
+        return pass == 2
+    }
+
     private fun onEqualsClick() {
         Log.d("equationQueue: ", equationQueue.toString())
         Log.d("specialOp: ", specialOp.toString())
@@ -224,20 +248,18 @@ class AdvancedCalculator : AppCompatActivity() {
 
             val prefix = equationQueue.last().substringBefore("^").replace("(", "").replace(")", "")
             val postfix = equationQueue.last().substringAfter("^")
-//            equationQueue[li].replace("^${postfix}", "")
+            val ops = arrayListOf("+", "-", "*", "/")
 
-            Log.d("Prefix", prefix)
-            Log.d("Postfix", postfix)
-            Log.d("equationQeueu", equationQueue.toString())
+            if (prefix.contains(getString(R.string.sqrt)))
+                return
 
-            equationQueue[li] = equationQueue[li]
-                .replace("(", "")
-                .replace(")", "")
-
-            if (prefix.toInt() > 0)
-                equationQueue[li] = "(${prefix.toInt() * -1})"
-            else
-                equationQueue[li] = "${prefix.toInt() * -1}"
+            if (prefix !in ops) {
+                if (prefix.toInt() > 0)
+                    equationQueue[li] = "(${prefix.toInt() * -1})"
+                else
+                    equationQueue[li] = "${prefix.toInt() * -1}"
+            } else
+                return
 
             if (isPow)
                 equationQueue[li] = "${equationQueue[li]}^${postfix}"
@@ -295,7 +317,7 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onOperationClick(it: View) {
-        if (digitClicks > 0) {
+        if (digitClicks > 0 && equationQueue.last().compareTo(getString(R.string.sqrt)) != 0) {
 //            if (isSpecialTyping)
 //                specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + ")"
 
@@ -327,8 +349,12 @@ class AdvancedCalculator : AppCompatActivity() {
         val btnText = btn.text.toString()
 
         if (!isSpecialTyping) {
-            if (digitClicks > 0)
-                equationQueue[equationQueue.lastIndex] = equationQueue.last() + btnText
+            if (digitClicks > 0) {
+                if (equationQueue.last().last() != ')')
+                    equationQueue[equationQueue.lastIndex] = equationQueue.last() + btnText
+                else
+                    equationQueue[equationQueue.lastIndex] = equationQueue.last().replace(")", btnText) + ')'
+            }
             else
                 equationQueue.add(btnText)
         } else
