@@ -187,7 +187,20 @@ class AdvancedCalculator : AppCompatActivity() {
         }
 
         buttonXPowY.setOnClickListener {
+            if (equationQueue.isEmpty() || equationQueue.last().contains("^"))
+                return@setOnClickListener
 
+            val li = equationQueue.lastIndex
+            if (!isSpecialTyping && !equationQueue.last().contains("^y") &&
+                (equationQueue[li].last().isDigit() || equationQueue[li].endsWith(")")) &&
+                    !equationQueue.last().contains(getString(R.string.sqrt))
+            ) {
+                equationQueue[li] = "${equationQueue[li]}^"
+            }
+
+            Log.d("equationQueue: ", equationQueue.toString())
+
+            updateEquationView()
         }
 
         buttonSin.setOnClickListener {
@@ -229,15 +242,71 @@ class AdvancedCalculator : AppCompatActivity() {
         return pass == 2
     }
 
+    private fun isFunction(str: String): Boolean {
+        val funcs = arrayListOf("cos(", "sin(", "tan(", "log(", "ln(")
+
+        for (f in funcs)
+            if (str.startsWith(f))
+                return true
+
+        return false
+    }
+
     private fun onEqualsClick() {
-        Log.d("equationQueue: ", equationQueue.toString())
-        Log.d("specialOp: ", specialOp.toString())
+        if (equationQueue.isEmpty() && specialOp.isEmpty())
+            return
+
+        val res: Float = 0F
+        val currOperation: Char
+        val myMap = equationQueue.mapIndexed { index: Int, s: String -> index to s }.toMap()
+
+
+        myMap.forEach { (i, op) ->
+            if (op.startsWith('s')) {
+                val opIndex = op.slice(1 until op.length).toInt()
+                equationQueue[i] = specialOp[opIndex]
+            }
+        }
+
+        for (str in equationQueue)
+        {
+            if (isFunction(str)) {
+                TODO("evaluate function")
+            } else if (isBasicOperation(str)) {
+                TODO("evaluate basic operation")
+            } else if (isPercentage(str)) {
+                TODO("evaluate percentage")
+            } else if (isSqareRoot(str)) {
+                TODO("evaluate sqrt")
+            } else if (isPower(str)) {
+                TODO("evaluate power")
+            }
+        }
+
+
+        solutionView.text = res.toString()
+    }
+
+    private fun isPower(str: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    private fun isSqareRoot(str: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    private fun isPercentage(str: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    private fun isBasicOperation(str: String): Boolean {
+        TODO("Not yet implemented")
     }
 
     private fun onChangeSign() {
         if (equationQueue.isEmpty() && specialOp.isEmpty())
             return
-
+4
         // Changing sign of a number
         if (!isSpecialTyping && equationQueue.isNotEmpty()) {
             val li = equationQueue.lastIndex
@@ -294,13 +363,14 @@ class AdvancedCalculator : AppCompatActivity() {
         if (equationQueue.isEmpty() && specialOp.isEmpty())
             return
 
-        val lastSpecialOp = if (specialOp.isNotEmpty()) specialOp[specialOp.lastIndex] else ""
-        val lastDigit =
-            if (equationQueue.isNotEmpty()) equationQueue[equationQueue.lastIndex] else ""
+        val lastSpecialOp = if (specialOp.isNotEmpty()) specialOp.last() else ""
+        val lastDigit = if (equationQueue.isNotEmpty()) equationQueue.last() else ""
 
         if (isSpecialTyping && validSpecialOpDot(lastSpecialOp))
             specialOp[specialOp.lastIndex] = "$lastSpecialOp."
         else if (!isSpecialTyping && lastDigit.isDigitsOnly())
+            equationQueue[equationQueue.lastIndex] = "$lastDigit."
+        else if (!isSpecialTyping && lastDigit[0].compareTo('√') == 0 && isFloatOrInt(lastDigit.substring(1)))
             equationQueue[equationQueue.lastIndex] = "$lastDigit."
 
         updateEquationView()
@@ -317,7 +387,8 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onOperationClick(it: View) {
-        if (digitClicks > 0 && equationQueue.last().compareTo(getString(R.string.sqrt)) != 0) {
+        if (digitClicks > 0 && equationQueue.last().compareTo(getString(R.string.sqrt)) != 0 &&
+                equationQueue.last().last() != '^') {
 //            if (isSpecialTyping)
 //                specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + ")"
 
