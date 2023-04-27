@@ -5,8 +5,17 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.isDigitsOnly
+import com.pranavpandey.android.dynamic.toasts.DynamicToast
+import kotlin.math.cos
+import kotlin.math.ln
+import kotlin.math.log10
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.math.tan
 
 class AdvancedCalculator : AppCompatActivity() {
 
@@ -144,12 +153,12 @@ class AdvancedCalculator : AppCompatActivity() {
             if (equationQueue.isEmpty())
                 return@setOnClickListener
 
-            if (!equationQueue.last().endsWith('%') && isFloatOrInt(equationQueue.last()))
+            if (!equationQueue.last().endsWith('%') && isFloatOrInt(equationQueue.last())) {
                 equationQueue[equationQueue.lastIndex] =
                     "${equationQueue[equationQueue.lastIndex]}%"
+                digitClicks++
+            }
 
-            Log.d("equationQueue: ", equationQueue.toString())
-            Log.d("specialOp: ", specialOp.toString())
             updateEquationView()
         }
 
@@ -225,21 +234,140 @@ class AdvancedCalculator : AppCompatActivity() {
 
     }
 
-    private fun isFloatOrInt(last: String): Boolean {
-        var pass: Int = 0
+    private fun isFloatOrInt(str: String): Boolean {
+        var pass = 0
 
         try {
-            last.toInt()
+            str.toInt()
             pass++
         } catch (_: java.lang.NumberFormatException) {}
 
         try {
-            last.toFloat()
+            str.toFloat()
             pass++
         } catch (_: java.lang.NumberFormatException) {}
 
 
         return pass == 2
+    }
+
+    private fun onEqualsClick() {
+        if (equationQueue.isEmpty() && specialOp.isEmpty())
+            return
+
+//        if (!valid())
+//            DynamicToast.makeError(this, "Invalid operation", Toast.LENGTH_SHORT)
+
+        var res: Float = 0f
+        var eval: Float = 0f
+        var isNum: Boolean = false
+        var currOperation: String = "+"
+        val myMap = equationQueue.mapIndexed { index: Int, s: String -> index to s }.toMap()
+        val queueMerge: MutableList<String> = arrayListOf()
+
+
+        Log.d("= Operations: ", equationQueue.toString())
+        Log.d("= Special operations: ", specialOp.toString())
+
+        myMap.forEach { (i, op) ->
+            if (op.startsWith('s')) {
+                val opIndex = op.slice(1 until op.length).toInt()
+                queueMerge.add(specialOp[opIndex])
+            } else {
+                queueMerge.add(op)
+            }
+        }
+
+        Log.d("= queueMerge: ", queueMerge.toString())
+
+        for (str in queueMerge)
+        {
+            if (isFunction(str)) {
+                val operation = str.split("(")[0]
+                val value = str.split("(")[1]
+                eval = calcTrig(operation, value)
+                isNum = true
+            } else if (isBasicOperation(str)) {
+                currOperation = str
+                isNum = false
+
+            } else if (isPercentage(str)) {
+                eval = (res / 100) * str.replace("%", "").toFloat()
+                isNum = true
+
+            } else if (isSquareRoot(str)) {
+                eval = sqrt(str.replace("√", "").toFloat())
+                isNum = true
+
+            } else if (isPower(str)) {
+                val base = str.split("^")[0]
+                val exponent = str.split("^")[1]
+                eval = base.toFloat().pow(exponent.toFloat())
+                isNum = true
+
+            } else {
+                eval = str.toFloat()
+                isNum = true
+            }
+
+
+            if (isNum) {
+                if (currOperation.compareTo("+") == 0) {
+                    res += eval
+                }
+                else if (currOperation.compareTo("-") == 0) {
+                    res -= eval
+                }
+                else if (currOperation.compareTo("*") == 0) {
+                    res *= eval
+                }
+                else if (currOperation.compareTo("/") == 0) {
+                    res /= eval
+                }
+            }
+        }
+
+        val toPrint = trim(res.toString(), res)
+
+        solutionView.text = toPrint
+    }
+
+    private fun trim(str: String, value: Float): String {
+        if (str.endsWith(".0"))
+            return str.split(".")[0]
+
+        return str
+    }
+
+    private fun calcTrig(operation: String, value: String): Float {
+        var num = 0f
+
+        try {
+            num = value.toFloat()
+        } catch(_: NumberFormatException) {}
+
+        if (operation.compareTo("sin") == 0) {
+            Log.d("sin", sin(num).toString())
+            return sin(num)
+        }
+        else if (operation.compareTo("cos") == 0) {
+            Log.d("sin", cos(num).toString())
+            return cos(num)
+        }
+        else if (operation.compareTo("tan") == 0) {
+            Log.d("sin", tan(num).toString())
+            return tan(num)
+        }
+        else if (operation.compareTo("log") == 0) {
+            Log.d("sin", log10(num).toString())
+            return log10(num)
+        }
+        else if (operation.compareTo("ln") == 0) {
+            Log.d("sin", ln(num).toString())
+            return ln(num)
+        }
+
+        return num
     }
 
     private fun isFunction(str: String): Boolean {
@@ -252,56 +380,35 @@ class AdvancedCalculator : AppCompatActivity() {
         return false
     }
 
-    private fun onEqualsClick() {
-        if (equationQueue.isEmpty() && specialOp.isEmpty())
-            return
-
-        val res: Float = 0F
-        val currOperation: Char
-        val myMap = equationQueue.mapIndexed { index: Int, s: String -> index to s }.toMap()
-
-
-        myMap.forEach { (i, op) ->
-            if (op.startsWith('s')) {
-                val opIndex = op.slice(1 until op.length).toInt()
-                equationQueue[i] = specialOp[opIndex]
-            }
-        }
-
-        for (str in equationQueue)
-        {
-            if (isFunction(str)) {
-                TODO("evaluate function")
-            } else if (isBasicOperation(str)) {
-                TODO("evaluate basic operation")
-            } else if (isPercentage(str)) {
-                TODO("evaluate percentage")
-            } else if (isSqareRoot(str)) {
-                TODO("evaluate sqrt")
-            } else if (isPower(str)) {
-                TODO("evaluate power")
-            }
-        }
-
-
-        solutionView.text = res.toString()
-    }
-
     private fun isPower(str: String): Boolean {
-        TODO("Not yet implemented")
+        if (str.contains("^"))
+            return true
+        return false
     }
 
-    private fun isSqareRoot(str: String): Boolean {
-        TODO("Not yet implemented")
+    private fun isSquareRoot(str: String): Boolean {
+        if (str.startsWith("√"))
+            return true
+        return false
     }
 
     private fun isPercentage(str: String): Boolean {
-        TODO("Not yet implemented")
+        if (str.endsWith("%"))
+            return true
+        return false
     }
 
     private fun isBasicOperation(str: String): Boolean {
-        TODO("Not yet implemented")
+        val operations = arrayListOf("+", "-", "*", "/")
+
+        for (op in operations)
+            if (str.startsWith(op))
+                return true
+
+        return false
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private fun onChangeSign() {
         if (equationQueue.isEmpty() && specialOp.isEmpty())
@@ -386,12 +493,11 @@ class AdvancedCalculator : AppCompatActivity() {
         return false
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     private fun onOperationClick(it: View) {
         if (digitClicks > 0 && equationQueue.last().compareTo(getString(R.string.sqrt)) != 0 &&
                 equationQueue.last().last() != '^') {
-//            if (isSpecialTyping)
-//                specialOp[specialOp.lastIndex] = specialOp[specialOp.lastIndex] + ")"
-
             isSpecialTyping = false
             equationQueue.add((it as Button).text.toString())
             digitClicks = 0
@@ -413,7 +519,8 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onDigitClick(it: View) {
-        if (equationQueue.isNotEmpty() && equationQueue.last().contains("^2"))
+        if ((equationQueue.isNotEmpty() && equationQueue.last().contains("^2")) ||
+            (equationQueue.isNotEmpty() && equationQueue.last().endsWith("%")))
             return
 
         val btn = it as Button
@@ -435,6 +542,8 @@ class AdvancedCalculator : AppCompatActivity() {
         updateEquationView()
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     private fun updateEquationView() {
         equationView.text = extractEquation()
     }
@@ -442,10 +551,15 @@ class AdvancedCalculator : AppCompatActivity() {
     private fun extractEquation(): String {
         var res = ""
 
+        Log.d("ex equationQueue: ", equationQueue.toString())
+        Log.d("ex specialOp: ", specialOp.toString())
+
         for (i in equationQueue.indices) {
-            res += if (equationQueue[i].startsWith("s")) {
+            res += if (equationQueue[i].startsWith("s") && !equationQueue[i].startsWith("sin")) {
                 val opIndex = equationQueue[i].slice(1 until equationQueue[i].length).toInt()
                 "${specialOp[opIndex]}) "
+            } else if (equationQueue[i].startsWith("sin")) {
+                "${equationQueue[i]}) "
             } else
                 "${equationQueue[i]} "
         }
