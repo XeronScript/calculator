@@ -28,11 +28,12 @@
 
         <activity
             android:name=".SimpleCalculator"
-            android:configChanges="orientation|screenSize|screenLayout"/>
+            android:configChanges="orientation|screenSize|screenLayout"
+            android:theme="@style/Theme.Calculator"/>
 
         <activity
             android:name=".AdvancedCalculator"
-            android:configChanges="orientation|screenSize|screenLayout" />
+            android:theme="@style/Theme.Calculator"/>
 
         <activity android:name=".About" />
 

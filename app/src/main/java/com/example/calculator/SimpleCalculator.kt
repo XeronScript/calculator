@@ -1,7 +1,9 @@
 package com.example.calculator
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -21,6 +23,13 @@ class SimpleCalculator : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.simple_calculator)
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            val window = this.window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.statusBarColor = this.resources.getColor(R.color.grey)
+        }
 
         equationView = findViewById(R.id.equation_view)
         solutionView = findViewById(R.id.solution_view)
@@ -171,7 +180,7 @@ class SimpleCalculator : AppCompatActivity() {
             res += numbers[i]
 
             try {
-                res += operators[i]
+                res += " " + operators[i] + " "
             } catch (err: java.lang.IndexOutOfBoundsException) {
                 continue
             }
@@ -216,8 +225,6 @@ class SimpleCalculator : AppCompatActivity() {
             } else
                 return
         }
-
-//        Log.d("Arrays", "$numbers $operators")
     }
 
     private fun clearEquationView() {

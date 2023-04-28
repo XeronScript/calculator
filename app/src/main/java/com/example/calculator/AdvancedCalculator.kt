@@ -1,8 +1,12 @@
 package com.example.calculator
 
+import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -21,9 +25,11 @@ class AdvancedCalculator : AppCompatActivity() {
 
     private lateinit var equationView: TextView
     private lateinit var solutionView: TextView
-    private val equationQueue: MutableList<String> = arrayListOf()
-    private val specialOp: MutableList<String> = arrayListOf()
+    private var equationQueue: MutableList<String> = arrayListOf()
+
+    private var specialOp: MutableList<String> = arrayListOf()
     private var isSpecialTyping: Boolean = false
+    private var solution: String = ""
     private var digitClicks: Int = 0
     private var s: Int = 0
 
@@ -32,8 +38,27 @@ class AdvancedCalculator : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.advanced_calculator)
 
+        if (Build.VERSION.SDK_INT >= 21) {
+            val window = this.window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.statusBarColor = this.resources.getColor(R.color.grey)
+        }
+
         equationView = findViewById(R.id.equation_view)
         solutionView = findViewById(R.id.solution_view)
+
+        if (savedInstanceState != null) {
+            equationQueue = savedInstanceState.getStringArrayList("equationQueue")!!.toMutableList()
+            specialOp = savedInstanceState.getStringArrayList("specialOp")!!.toMutableList()
+            isSpecialTyping = savedInstanceState.getBoolean("isSpecialTyping")
+            digitClicks = savedInstanceState.getInt("digitClicks")
+            s = savedInstanceState.getInt("s")
+            solution = savedInstanceState.getString("solution").toString()
+
+            val displayMetrics = DisplayMetrics()
+            equationView.minWidth = displayMetrics.widthPixels
+        }
 
         var clicks: Short = 0
 
@@ -232,6 +257,9 @@ class AdvancedCalculator : AppCompatActivity() {
             onSpecialOpClick(it)
         }
 
+
+        updateEquationView()
+        solutionView.text = solution
     }
 
     private fun isFloatOrInt(str: String): Boolean {
@@ -252,16 +280,18 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun onEqualsClick() {
-        if (equationQueue.isEmpty() && specialOp.isEmpty())
+        if ((equationQueue.isEmpty() && specialOp.isEmpty()) || !validEquation())
             return
 
-//        if (!valid())
-//            DynamicToast.makeError(this, "Invalid operation", Toast.LENGTH_SHORT)
+        if (!validLogarithm()) {
+            DynamicToast.makeError(this, "Invalid operation", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        var res: Float = 0f
-        var eval: Float = 0f
-        var isNum: Boolean = false
-        var currOperation: String = "+"
+        var res = 0f
+        var eval = 0f
+        var isNum: Boolean
+        var currOperation = "+"
         val myMap = equationQueue.mapIndexed { index: Int, s: String -> index to s }.toMap()
         val queueMerge: MutableList<String> = arrayListOf()
 
@@ -292,7 +322,12 @@ class AdvancedCalculator : AppCompatActivity() {
                 isNum = false
 
             } else if (isPercentage(str)) {
-                eval = (res / 100) * str.replace("%", "").toFloat()
+                eval = if (currOperation.compareTo("*") == 0)
+                    (str.replace("%", "").toFloat() / 100)
+                else if (currOperation.compareTo("/") == 0)
+                    str.replace("%", "").toFloat()
+                else
+                    (str.replace("%", "").toFloat() / 100) * res
                 isNum = true
 
             } else if (isSquareRoot(str)) {
@@ -300,13 +335,13 @@ class AdvancedCalculator : AppCompatActivity() {
                 isNum = true
 
             } else if (isPower(str)) {
-                val base = str.split("^")[0]
+                val base = str.split("^")[0].replace("(", "").replace(")", "")
                 val exponent = str.split("^")[1]
                 eval = base.toFloat().pow(exponent.toFloat())
                 isNum = true
 
             } else {
-                eval = str.toFloat()
+                eval = str.replace(")", "").replace("(", "").toFloat()
                 isNum = true
             }
 
@@ -322,17 +357,38 @@ class AdvancedCalculator : AppCompatActivity() {
                     res *= eval
                 }
                 else if (currOperation.compareTo("/") == 0) {
+                    if (isPercentage(str))
+                        res *= 100
                     res /= eval
                 }
             }
         }
 
-        val toPrint = trim(res.toString(), res)
+        val toPrint = trim(res.toString())
+        solution = toPrint
 
         solutionView.text = toPrint
     }
 
-    private fun trim(str: String, value: Float): String {
+    private fun validEquation(): Boolean {
+        val lastOp = equationQueue.last()
+
+        if (isBasicOperation(lastOp) || lastOp.endsWith("^"))
+            return false
+
+        return true
+    }
+
+    private fun validLogarithm(): Boolean {
+        for (op in specialOp)
+            if ((op.startsWith("ln") || op.startsWith("log")) &&
+                    op.split("(")[1].toFloat() <= 0)
+                return false
+
+        return true
+    }
+
+    private fun trim(str: String): String {
         if (str.endsWith(".0"))
             return str.split(".")[0]
 
@@ -351,19 +407,19 @@ class AdvancedCalculator : AppCompatActivity() {
             return sin(num)
         }
         else if (operation.compareTo("cos") == 0) {
-            Log.d("sin", cos(num).toString())
+            Log.d("cos", cos(num).toString())
             return cos(num)
         }
         else if (operation.compareTo("tan") == 0) {
-            Log.d("sin", tan(num).toString())
+            Log.d("tan", tan(num).toString())
             return tan(num)
         }
         else if (operation.compareTo("log") == 0) {
-            Log.d("sin", log10(num).toString())
+            Log.d("log10", log10(num).toString())
             return log10(num)
         }
         else if (operation.compareTo("ln") == 0) {
-            Log.d("sin", ln(num).toString())
+            Log.d("ln", ln(num).toString())
             return ln(num)
         }
 
@@ -413,7 +469,7 @@ class AdvancedCalculator : AppCompatActivity() {
     private fun onChangeSign() {
         if (equationQueue.isEmpty() && specialOp.isEmpty())
             return
-4
+
         // Changing sign of a number
         if (!isSpecialTyping && equationQueue.isNotEmpty()) {
             val li = equationQueue.lastIndex
@@ -484,6 +540,9 @@ class AdvancedCalculator : AppCompatActivity() {
     }
 
     private fun validSpecialOpDot(lastSpecialOp: String): Boolean {
+        if (lastSpecialOp.contains("."))
+            return false
+
         if (lastSpecialOp.startsWith("ln") && lastSpecialOp.length > 3)
             return true
         else
@@ -579,5 +638,18 @@ class AdvancedCalculator : AppCompatActivity() {
     private fun clearAllViews() {
         solutionView.text = ""
         clearEquationView()
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putStringArrayList("equationQueue", ArrayList<String>(equationQueue))
+        outState.putStringArrayList("specialOp", ArrayList<String>(specialOp))
+        outState.putBoolean("isSpecialTyping", isSpecialTyping)
+        outState.putInt("digitClicks", digitClicks)
+        outState.putInt("s", s)
+        outState.putString("solution", solution)
     }
 }
