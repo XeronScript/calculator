@@ -1,6 +1,5 @@
 package com.example.calculator
 
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -8,6 +7,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.pranavpandey.android.dynamic.toasts.DynamicToast
 import javax.script.ScriptEngineManager
 
@@ -24,12 +24,10 @@ class SimpleCalculator : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.simple_calculator)
 
-        if (Build.VERSION.SDK_INT >= 21) {
-            val window = this.window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            window.statusBarColor = this.resources.getColor(R.color.grey)
-        }
+        val window = this.window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.clearFlags(67108864)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.grey)
 
         equationView = findViewById(R.id.equation_view)
         solutionView = findViewById(R.id.solution_view)

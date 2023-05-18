@@ -1,8 +1,6 @@
 package com.example.calculator
 
-import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
@@ -11,6 +9,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
 import com.pranavpandey.android.dynamic.toasts.DynamicToast
 import kotlin.math.cos
@@ -38,12 +37,10 @@ class AdvancedCalculator : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.advanced_calculator)
 
-        if (Build.VERSION.SDK_INT >= 21) {
-            val window = this.window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            window.statusBarColor = this.resources.getColor(R.color.grey)
-        }
+        val window = this.window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.clearFlags(67108864)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.grey)
 
         equationView = findViewById(R.id.equation_view)
         solutionView = findViewById(R.id.solution_view)
@@ -299,7 +296,7 @@ class AdvancedCalculator : AppCompatActivity() {
         Log.d("= Operations: ", equationQueue.toString())
         Log.d("= Special operations: ", specialOp.toString())
 
-        myMap.forEach { (i, op) ->
+        myMap.forEach { (_, op) ->
             if (op.startsWith('s')) {
                 val opIndex = op.slice(1 until op.length).toInt()
                 queueMerge.add(specialOp[opIndex])
