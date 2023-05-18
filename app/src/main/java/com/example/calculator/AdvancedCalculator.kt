@@ -7,11 +7,10 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
-import com.pranavpandey.android.dynamic.toasts.DynamicToast
+import com.example.calculator.utils.ToastManager
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.log10
@@ -25,12 +24,13 @@ class AdvancedCalculator : AppCompatActivity() {
     private lateinit var equationView: TextView
     private lateinit var solutionView: TextView
     private var equationQueue: MutableList<String> = arrayListOf()
-
     private var specialOp: MutableList<String> = arrayListOf()
+
     private var isSpecialTyping: Boolean = false
     private var solution: String = ""
     private var digitClicks: Int = 0
     private var s: Int = 0
+    private var clicks: Short = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,12 +52,12 @@ class AdvancedCalculator : AppCompatActivity() {
             digitClicks = savedInstanceState.getInt("digitClicks")
             s = savedInstanceState.getInt("s")
             solution = savedInstanceState.getString("solution").toString()
+            clicks = savedInstanceState.getShort("clicks")
 
             val displayMetrics = DisplayMetrics()
             equationView.minWidth = displayMetrics.widthPixels
         }
 
-        var clicks: Short = 0
 
         val buttonOne = findViewById<Button>(R.id.button_1)
         val buttonTwo = findViewById<Button>(R.id.button_2)
@@ -281,7 +281,7 @@ class AdvancedCalculator : AppCompatActivity() {
             return
 
         if (!validLogarithm()) {
-            DynamicToast.makeError(this, "Invalid operation", Toast.LENGTH_SHORT).show()
+            ToastManager.showToast(this, R.layout.custom_toast)
             return
         }
 
@@ -296,6 +296,7 @@ class AdvancedCalculator : AppCompatActivity() {
         Log.d("= Operations: ", equationQueue.toString())
         Log.d("= Special operations: ", specialOp.toString())
 
+        // Merging specialOp and operationQueue into queueMerge containing all operations
         myMap.forEach { (_, op) ->
             if (op.startsWith('s')) {
                 val opIndex = op.slice(1 until op.length).toInt()
@@ -479,8 +480,10 @@ class AdvancedCalculator : AppCompatActivity() {
             val postfix = equationQueue.last().substringAfter("^")
             val ops = arrayListOf("+", "-", "*", "/")
 
-            if (prefix.contains(getString(R.string.sqrt)))
+            if (prefix.contains(getString(R.string.sqrt))) {
+                ToastManager.showToast(this, R.layout.custom_toast)
                 return
+            }
 
             if (prefix !in ops) {
                 if (prefix.toInt() > 0)
@@ -634,6 +637,7 @@ class AdvancedCalculator : AppCompatActivity() {
 
     private fun clearAllViews() {
         solutionView.text = ""
+        solution = ""
         clearEquationView()
     }
 
@@ -648,5 +652,6 @@ class AdvancedCalculator : AppCompatActivity() {
         outState.putInt("digitClicks", digitClicks)
         outState.putInt("s", s)
         outState.putString("solution", solution)
+        outState.putShort("clicks", clicks)
     }
 }

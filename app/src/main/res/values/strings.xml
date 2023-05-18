@@ -37,4 +37,6 @@
     <string name="calculator">Calculator</string>
     <string name="surname">Made by: Kamil Sasin</string>
     <string name="about_description">A calculator application made for a laboratory assignment</string>
+    <string name="toast_message">Invalid Operation</string>
+    <string name="toast_content_description">Error</string>
 </resources>
