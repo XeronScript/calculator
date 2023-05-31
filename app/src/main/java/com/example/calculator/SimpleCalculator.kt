@@ -2,11 +2,12 @@ package com.example.calculator
 
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.pranavpandey.android.dynamic.toasts.DynamicToast
+import androidx.core.content.ContextCompat
+import com.example.calculator.utils.ToastManager
 import javax.script.ScriptEngineManager
 
 class SimpleCalculator : AppCompatActivity() {
@@ -21,6 +22,11 @@ class SimpleCalculator : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.simple_calculator)
+
+        val window = this.window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.clearFlags(67108864)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.grey)
 
         equationView = findViewById(R.id.equation_view)
         solutionView = findViewById(R.id.solution_view)
@@ -147,18 +153,26 @@ class SimpleCalculator : AppCompatActivity() {
     }
 
     private fun onEqualsClick() {
-        if (numbers.size == operators.size) {
-            DynamicToast.makeError(this, "Invalid Equation", Toast.LENGTH_SHORT).show()
+        if (numbers.size == 0 && operators.size == 0) {
+            solutionView.text = "0"
+            return
+        } else if (numbers.size == operators.size) {
+            ToastManager.showToast(this, R.layout.custom_toast)
             return
         }
 
         val engine = ScriptEngineManager().getEngineByName("rhino")
         val res = engine.eval(extractEquation()).toString()
 
-        if (Integer.parseInt(res.last().toString()) == 0)
-            solutionView.text = (res.split("."))[0]
-        else
-            solutionView.text = res
+        try {
+            if (Integer.parseInt(res.last().toString()) == 0)
+                solutionView.text = (res.split("."))[0]
+            else
+                solutionView.text = res
+
+        } catch (_: Exception) {
+            ToastManager.showToast(this, R.layout.custom_toast)
+        }
     }
 
     private fun extractEquation(): String {
@@ -171,7 +185,7 @@ class SimpleCalculator : AppCompatActivity() {
             res += numbers[i]
 
             try {
-                res += operators[i]
+                res += " " + operators[i] + " "
             } catch (err: java.lang.IndexOutOfBoundsException) {
                 continue
             }
@@ -216,8 +230,6 @@ class SimpleCalculator : AppCompatActivity() {
             } else
                 return
         }
-
-//        Log.d("Arrays", "$numbers $operators")
     }
 
     private fun clearEquationView() {

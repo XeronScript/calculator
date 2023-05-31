@@ -3,13 +3,20 @@ package com.example.calculator
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.WindowManager
 import android.widget.Button
+import androidx.core.content.ContextCompat
 import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_menu)
+
+        val window = this.window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.clearFlags(67108864)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.greyDarker)
 
         val btnSimple = findViewById<Button>(R.id.simple)
         val btnAdvanced = findViewById<Button>(R.id.advanced)
@@ -22,8 +29,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnSimple.setOnClickListener {
-            val simple_calc = Intent(this, SimpleCalculator::class.java)
-            startActivity(simple_calc)
+            val simpleCalc = Intent(this, SimpleCalculator::class.java)
+            startActivity(simpleCalc)
         }
 
         btnAdvanced.setOnClickListener {
